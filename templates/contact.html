@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <style>
+    .contact-container {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 50px;
+    }
+
+    .contact-container h2 {
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .contact-container p {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .contact-container a {
+      color: blue;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .contact-container a:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+  <div class="container contact-container">
+    <h2>Contact Us</h2>
+    <div>
+      <h4>Technical Help</h4>
+      <p><strong>Phone &amp; WhatsApp:</strong> +923305922017</p>
+      <p><strong>Email:</strong> samadriaz@uetpeshawar.edu.pk</p>
+    </div>
+    <div>
+      <h4>For Purchasing Details</h4>
+      <p><strong>Office:</strong> CISNR New Academic Block, Basement, UET, Peshawar, Khyber Pakhtunkhwa 25125</p>
+      <p><strong>Phone:</strong> +92-91-9222104</p>
+      <p><strong>Email:</strong> info@cisnr.com</p>
+    </div>
+    <div>
+      <h4>User Manual</h4>
+      <p><a href="{{ url_for('static', filename='user_manual.pdf') }}" target="_blank">Download User Manual (PDF)</a></p>
+    </div>
+  </div>
+{% endblock %}

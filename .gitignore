@@ -1,0 +1,13 @@
+.env
+backend/.env
+client_secret*.json
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+data/
+uploads/
+static/*.png
+count_pictures/
+experiment_*/
+*.log

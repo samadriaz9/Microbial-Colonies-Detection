@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <style>
+    body {
+      background-image: url('/static/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 50px;
+    }
+
+    .form-signin img {
+      width: 150px;
+      height: auto;
+    }
+
+    .form-signin h1 {
+      font-weight: bold;
+    }
+  </style>
+  <div class="container">
+    <br>
+    <br>
+    <div class="row">
+      <div class="col-md-4 offset-md-4">
+        <form class="form-signin" method="post" enctype="multipart/form-data" id="upload-form">
+          <img class="mb-4 mx-auto d-block" src="/static/pytorch.png" alt="PURITY NOW Logo">
+          <h1 class="h3 mb-3 font-weight-normal text-center"><strong>Upload Images to Detect bacteria</strong></h1>
+          <div class="form-group">
+            <input type="file" name="file" class="form-control-file" id="inputfile" multiple accept="image/*" required>
+          </div>
+          <div class="text-center">
+            <button class="btn btn-lg btn-primary btn-block" type="submit" id="submit-btn">Upload</button>
+            <p id="wait-message" style="display: none;">Please wait...</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("upload-form");
+      const submitButton = document.getElementById("submit-btn");
+      const waitMessage = document.getElementById("wait-message");
+
+      form.addEventListener("submit", function () {
+        waitMessage.style.display = "block";
+        submitButton.disabled = true;
+      });
+    });
+  </script>
+{% endblock %}

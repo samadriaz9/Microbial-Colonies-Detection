@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8 mt-4 mb-2">
+      <h1 class="display-4 text-center mb-4">Detected E.coli Image</h1>
+    </div>
+    <div class="col-md-8 mt-1 mb-2">
+      <img src="/{{ img_path }}" alt="Detected E.coli" class="img-fluid rounded shadow-lg border border-primary">
+    </div>
+    <div class="col-md-8">
+      <a href="/" class="btn btn-primary btn-lg btn-block" role="button" aria-pressed="true">Upload Another Image</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

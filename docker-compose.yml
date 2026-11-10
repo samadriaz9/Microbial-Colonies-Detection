@@ -1,0 +1,50 @@
+name: microbial-colonies
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: colony
+      POSTGRES_PASSWORD: colony
+      POSTGRES_DB: colony
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U colony -d colony"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg://colony:colony@db:5432/colony
+      MODEL_PATH: /models/best.pt
+      DATA_DIR: /data
+      APP_ORIGIN: http://localhost:8000
+      ENV: production
+    volumes:
+      - ./best.pt:/models/best.pt:ro
+      - uploads:/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+
+volumes:
+  pgdata:
+  uploads:

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+    <br>
+    <br>
+    <div class="row">
+      <div class="col-md-4 offset-md-4">
+        <form class="form-signin" method="post" enctype="multipart/form-data" onsubmit="uploadImages(event)">
+          <img class="mb-4 mx-auto d-block" src="/static/pytorch.png" alt="" width="250">
+          <h1 class="h3 mb-3 font-weight-normal text-center">Upload images to detect and classify bacteria</h1>
+          <div class="form-group">
+            <!-- Add the "multiple" attribute to the file input element -->
+            <input type="file" name="file" class="form-control-file" id="inputfile" multiple required>
+          </div>
+          <div class="text-center">
+            <button class="btn btn-lg btn-primary btn-block" type="submit" id="submit-btn">Upload</button>
+          </div>
+        </form>
+        <div id="progress-container" style="display: none;">
+          <progress id="progress-bar" max="100" value="0"></progress>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function uploadImages(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      const progressBar = document.getElementById("progress-bar");
+      const progressContainer = document.getElementById("progress-container");
+      progressContainer.style.display = "block";
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/");
+      xhr.upload.onprogress = (event) => {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        progressBar.value = progress;
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          window.location.href = "/results";
+        }
+      };
+
+      xhr.send(formData);
+    }
+  </script>
+{% endblock %}
