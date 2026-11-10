@@ -84,34 +84,49 @@ async function readError(response) {
   return "The request failed.";
 }
 
-function petri() {
-  return `<span class="mark" aria-hidden="true"><span></span></span>`;
+function icon(name) {
+  const paths = {
+    dashboard: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    history: '<path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v5h5"/><path d="M12 8v5l3 2"/>',
+    logout: '<path d="M9 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/><path d="M14 16l4-4-4-4"/><path d="M18 12H9"/>',
+    search: '<circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/>',
+    trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 12h8l1-12"/>',
+    download: '<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>',
+    image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16l-5-5-9 8"/>',
+    grid: '<rect x="3" y="3" width="7" height="5" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="3" y="11" width="7" height="5" rx="1"/><rect x="14" y="11" width="7" height="5" rx="1"/><rect x="3" y="19" width="18" height="2" rx="1"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    plate: '<circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="14" cy="13" r="1.4"/>',
+  };
+  return `<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name] || ""}</svg></span>`;
+}
+
+function brand() {
+  return `<img class="logo" src="/logo.png" alt="" width="40" height="40" /><span><strong>Colonies</strong><small>Detection</small></span>`;
 }
 
 function layout(content) {
   const route = current().name;
   const initial = (state.user.name || "?").trim().charAt(0).toUpperCase();
-  const docs = state.config.docs ? `<a class="docs-link" href="/docs">API reference</a>` : "";
   return `
     <div class="shell">
       <aside class="sidebar">
-        <a class="brand" href="#/dashboard">${petri()}<span><strong>Colonies</strong><small>Detection</small></span></a>
+        <a class="brand" href="#/dashboard">${brand()}</a>
         <nav>
-          <a class="${route === "dashboard" ? "active" : ""}" href="#/dashboard">Dashboard</a>
-          <a class="${route === "new" ? "active" : ""}" href="#/new">New analysis</a>
-          <a class="${route === "history" || route === "analysis" ? "active" : ""}" href="#/history">History</a>
+          <a class="${route === "dashboard" ? "active" : ""}" href="#/dashboard">${icon("dashboard")} Dashboard</a>
+          <a class="${route === "new" ? "active" : ""}" href="#/new">${icon("plus")} New analysis</a>
+          <a class="${route === "history" || route === "analysis" ? "active" : ""}" href="#/history">${icon("history")} History</a>
         </nav>
         <div class="spacer"></div>
-        ${docs}
         <div class="userchip">
           <span class="avatar">${esc(initial)}</span>
           <div><strong>${esc(state.user.name)}</strong><small>${esc(state.user.email)}</small></div>
-          <button class="signout" type="button" data-action="logout">Sign out</button>
+          <button class="icon-btn" type="button" data-action="logout" aria-label="Sign out">${icon("logout")}</button>
         </div>
       </aside>
       <div class="workspace">${content}<div id="toast" role="status"></div></div>
     </div>
-    <div id="lightbox" hidden><button class="btn ghost" type="button" data-action="close-lightbox">Close</button><img alt="" /></div>`;
+    <div id="lightbox" hidden><button class="icon-btn light" type="button" data-action="close-lightbox" aria-label="Close">${icon("close")}</button><img alt="" /></div>`;
 }
 
 function statusTag(status) {
@@ -125,14 +140,15 @@ function recordCard(item, extra) {
     ? `<img src="${esc(item.thumb_url)}" alt="" />`
     : `<div class="ph">${item.status === "processing" ? "Running" : "No image"}</div>`;
   const mode = item.mode === "grid" ? `${item.rows}×${item.cols} mosaic` : "Single plate";
+  const detail = [item.organism, mode, when(item.created_at)].filter(Boolean).join(" · ");
   return `
     <article class="record">
       <a href="#/analysis/${item.id}">${thumb}</a>
       <a href="#/analysis/${item.id}">
         <h3>${esc(item.title)}</h3>
-        <div class="meta">${esc(item.organism || "Organism not set")} · ${mode} · ${when(item.created_at)} ${statusTag(item.status)}</div>
+        <div class="meta">${esc(detail)} ${statusTag(item.status)}</div>
       </a>
-      <div>
+      <div class="record-side">
         <div class="count">${item.colony_count == null ? "—" : num(item.colony_count)}<small>colonies</small></div>
         ${extra || ""}
       </div>
@@ -190,21 +206,15 @@ function authScreen(registering) {
   return `
     <section class="auth">
       <div class="auth-story">
-        <a class="brand" href="#/login">${petri()}<span><strong>Colonies</strong><small>Detection</small></span></a>
+        <a class="brand" href="#/login">${brand()}</a>
         <div>
-          <h1>Count the plate. Keep the record.</h1>
-          <p class="lede">Upload one frame or a whole stage scan. The model marks colonies, and each account keeps its own history.</p>
-        </div>
-        <div class="story-points">
-          <div><span class="avatar">1</span><p>Single plate or a numbered mosaic. Set the image count, rows, and columns.</p></div>
-          <div><span class="avatar">2</span><p>The 7×4 scanner path matches the stage: down, up, down, up.</p></div>
-          <div><span class="avatar">3</span><p>Counts, boxes, and the stitched plate stay with the signed-in user.</p></div>
+          <h1>Count the plate.</h1>
+          <p class="lede">One photograph, or a full stage scan. The count stays on your account.</p>
         </div>
       </div>
       <div class="auth-panel">
         <form class="auth-card" id="auth-form">
           <h2>${registering ? "Create an account" : "Sign in"}</h2>
-          <p class="hint">${registering ? "Use email, or continue with Google." : "Your plates are visible only on this account."}</p>
           <p class="banner" id="auth-error" hidden></p>
           ${form}
           ${google}
@@ -303,23 +313,20 @@ async function showDashboard(token) {
   if (token !== renderToken) return;
   const recent = data.recent.length
     ? data.recent.map((item) => recordCard(item)).join("")
-    : `<div class="card empty"><h2>No plates yet</h2><p class="hint">Run a single image or a 28-frame mosaic. The result stays in this account.</p><p><a class="btn primary" href="#/new">New analysis</a></p></div>`;
+    : `<div class="card empty"><h2>No plates yet</h2><p class="hint">Start with one image, or a 28-frame scan.</p><p><a class="btn primary" href="#/new">${icon("plus")} New analysis</a></p></div>`;
   paint(layout(`
     <header class="page-head">
-      <div>
-        <h1>Good to see you, ${esc(state.user.name.split(" ")[0])}.</h1>
-        <p class="lede">Counts below are only from this account.</p>
-      </div>
-      <a class="btn primary" href="#/new">New analysis</a>
+      <div><h1>Dashboard</h1></div>
+      <a class="btn primary" href="#/new">${icon("plus")} New analysis</a>
     </header>
     <section class="metrics">
-      <article class="metric"><span>Completed runs</span><strong>${num(data.analyses)}</strong></article>
-      <article class="metric"><span>Colonies counted</span><strong>${num(data.colonies)}</strong></article>
-      <article class="metric"><span>Average per run</span><strong>${data.mean_colonies == null ? "—" : num(data.mean_colonies)}</strong></article>
-      <article class="metric"><span>In progress</span><strong>${num(data.processing)}</strong></article>
+      <article class="metric">${icon("plate")}<span>Completed</span><strong>${num(data.analyses)}</strong></article>
+      <article class="metric">${icon("grid")}<span>Colonies</span><strong>${num(data.colonies)}</strong></article>
+      <article class="metric">${icon("dashboard")}<span>Average</span><strong>${data.mean_colonies == null ? "—" : num(data.mean_colonies)}</strong></article>
+      <article class="metric">${icon("history")}<span>Running</span><strong>${num(data.processing)}</strong></article>
     </section>
     <section class="card">
-      <div class="section-title"><h2>Recent</h2><a href="#/history">All history</a></div>
+      <div class="section-title"><h2>Recent</h2><a href="#/history">History</a></div>
       <div class="stack">${recent}</div>
     </section>`));
 }
@@ -361,22 +368,20 @@ function slots(rows, cols, layout) {
 function newAnalysis() {
   return `
     <header class="page-head">
-      <div>
-        <h1>New analysis</h1>
-        <p class="lede">One photograph, or a grid of frames stitched in the order you set.</p>
-      </div>
+      <div><h1>New analysis</h1></div>
     </header>
     <form id="analysis-form" class="stack">
       <div class="modes">
-        <label class="mode"><input type="radio" name="mode" value="single" /> <strong>Single plate</strong><small>Annotate one image and count its colonies.</small></label>
-        <label class="mode"><input type="radio" name="mode" value="grid" checked /> <strong>Mosaic</strong><small>Set the image count, rows, and columns, then stitch.</small></label>
+        <label class="mode"><input type="radio" name="mode" value="single" />${icon("image")}<span class="mode-copy"><strong>Single plate</strong><small>One image, boxes, and a count.</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="grid" checked />${icon("grid")}<span class="mode-copy"><strong>Mosaic</strong><small>Set the count, rows, and columns, then stitch.</small></span></label>
       </div>
       <div class="card stack">
         <div class="form-grid">
           <label class="field"><span>Sample name</span><input name="title" placeholder="Plate A, 24 h" /></label>
           <label class="field"><span>Organism</span><input name="organism" list="organisms" placeholder="E. coli" /></label>
           <datalist id="organisms"><option value="E. coli"></option><option value="S. aureus"></option><option value="Mixed culture"></option></datalist>
-          <label class="field wide"><span>Notes</span><textarea name="notes" placeholder="Medium, dilution, incubation"></textarea></label>
+          <label class="field"><span>Confidence</span><input name="confidence" type="number" min="0.05" max="0.95" step="0.05" value="0.25" /></label>
+          <label class="field"><span>Notes</span><input name="notes" placeholder="Medium, dilution, time" /></label>
         </div>
         <div id="grid-controls" class="stack">
           <div class="pills">
@@ -386,35 +391,29 @@ function newAnalysis() {
             <button class="pill" type="button" data-preset="12">12 · 3×4</button>
           </div>
           <div class="form-grid">
-            <label class="field"><span>Number of pictures</span><input name="count" type="number" min="1" max="64" value="28" /></label>
+            <label class="field"><span>Pictures</span><input name="count" type="number" min="1" max="64" value="28" /></label>
             <label class="field"><span>Rows</span><input name="rows" type="number" min="1" max="16" value="7" /></label>
             <label class="field"><span>Columns</span><input name="cols" type="number" min="1" max="16" value="4" /></label>
             <label class="field"><span>Placement</span>
               <select name="layout">
-                <option value="scanner" selected>Scanner path (column serpentine)</option>
-                <option value="row">Row by row, left to right</option>
+                <option value="scanner" selected>Scanner path</option>
+                <option value="row">Row by row</option>
               </select>
             </label>
           </div>
           <p class="hint" id="layout-note"></p>
           <div id="slotmap"></div>
         </div>
-        <details>
-          <summary>Detection settings</summary>
-          <div class="form-grid" style="margin-top:12px">
-            <label class="field"><span>Confidence threshold</span><input name="confidence" type="number" min="0.05" max="0.95" step="0.05" value="0.25" /></label>
-            <label class="field"><span>Model image size</span><input name="imgsz" type="number" min="320" max="1600" step="32" value="1280" /></label>
-          </div>
-        </details>
         <label class="drop" id="drop">
           <input class="file-input" id="files" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" multiple />
+          ${icon("image")}
           <strong>Drop images here, or browse</strong>
           <span class="hint" id="file-count">No images yet</span>
         </label>
-        <label class="check"><input type="checkbox" name="sort_by_name" checked /> Sort by file name (1, 2, 10…)</label>
+        <label class="check"><input type="checkbox" name="sort_by_name" checked /> Sort by file name (1, 2, 10)</label>
         <div class="thumbs" id="thumbs"></div>
         <p class="banner" id="form-error" hidden></p>
-        <div class="btn-row"><button class="btn primary" id="run" type="submit">Run detection</button></div>
+        <div class="btn-row"><button class="btn primary" id="run" type="submit">${icon("plus")} <span>Run detection</span></button></div>
       </div>
     </form>`;
 }
@@ -556,16 +555,17 @@ function wireNew(root) {
     body.set("rows", selected === "grid" ? form.rows.value : "1");
     body.set("cols", selected === "grid" ? form.cols.value : "1");
     body.set("confidence", form.confidence.value);
-    body.set("imgsz", form.imgsz.value);
+    body.set("imgsz", "1280");
     body.set("sort_by_name", form.sort_by_name.checked ? "true" : "false");
     chosen.forEach((file) => body.append("files", file));
     const button = root.querySelector("#run");
+    const label = button.querySelector("span");
     button.disabled = true;
-    button.textContent = "Uploading…";
+    label.textContent = "Uploading…";
     const res = await api("/api/analyses", { method: "POST", body });
     if (!res.ok) {
       button.disabled = false;
-      button.textContent = "Run detection";
+      label.textContent = "Run detection";
       error.hidden = false;
       error.textContent = await readError(res);
       return;
@@ -592,14 +592,14 @@ async function showHistory(token) {
   const mode = route.query.get("mode") || "";
   const offset = Number(route.query.get("offset") || 0);
   const list = data.items.length
-    ? data.items.map((item) => recordCard(item, `<button class="btn danger" type="button" data-action="delete-analysis" data-id="${item.id}">Delete</button>`)).join("")
-    : `<div class="card empty"><h2>Nothing in this view</h2><p class="hint">Completed and running analyses for this account show up here.</p></div>`;
+    ? data.items.map((item) => recordCard(item, `<button class="icon-btn danger" type="button" data-action="delete-analysis" data-id="${item.id}" aria-label="Delete">${icon("trash")}</button>`)).join("")
+    : `<div class="card empty"><h2>Nothing in this view</h2><p class="hint">Runs from this account show up here.</p></div>`;
   const prev = Math.max(0, offset - 12);
   const next = offset + 12;
   paint(layout(`
-    <header class="page-head"><div><h1>History</h1><p class="lede">${num(data.total)} ${data.total === 1 ? "record" : "records"} on this account.</p></div><a class="btn primary" href="#/new">New analysis</a></header>
+    <header class="page-head"><div><h1>History</h1><p class="lede">${num(data.total)} ${data.total === 1 ? "record" : "records"}</p></div><a class="btn primary" href="#/new">${icon("plus")} New analysis</a></header>
     <form class="filters" id="history-search">
-      <input type="search" name="q" value="${esc(q)}" placeholder="Search sample, organism, notes" />
+      <label class="search">${icon("search")}<input type="search" name="q" value="${esc(q)}" placeholder="Sample, organism, notes" /></label>
       <select name="mode">
         <option value="" ${mode === "" ? "selected" : ""}>All types</option>
         <option value="single" ${mode === "single" ? "selected" : ""}>Single plate</option>
@@ -685,11 +685,11 @@ function analysisView(data) {
       <div>
         <p class="hint"><a href="#/history">History</a></p>
         <h1>${esc(data.title)}</h1>
-        <p class="lede">${esc(data.organism || "Organism not set")}${data.notes ? ` · ${esc(data.notes)}` : ""}</p>
+        ${data.organism || data.notes ? `<p class="lede">${esc([data.organism, data.notes].filter(Boolean).join(" · "))}</p>` : ""}
       </div>
       <div class="btn-row">
-        <a class="btn ghost" href="/api/analyses/${data.id}/export.csv">Download CSV</a>
-        <button class="btn danger" type="button" data-action="delete-analysis" data-id="${data.id}">Delete</button>
+        <a class="btn ghost" href="/api/analyses/${data.id}/export.csv">${icon("download")} CSV</a>
+        <button class="btn danger" type="button" data-action="delete-analysis" data-id="${data.id}">${icon("trash")} Delete</button>
       </div>
     </header>
     <section class="split">
@@ -700,10 +700,9 @@ function analysisView(data) {
         <span class="hint">Colonies</span>
         <div class="hero-count">${num(data.colony_count)}</div>
         <p class="hint">${data.mode === "grid" ? "Sum of the tile counts." : "Boxes on this plate."}</p>
-        <div class="btn-row" style="margin: 12px 0">
-          <button class="btn ghost" type="button" data-view="annotated">Annotated</button>
-          <button class="btn ghost" type="button" data-view="original">Original</button>
-          ${data.mode === "grid" ? `<button class="btn ghost" type="button" data-view="plate">Full plate</button>` : ""}
+        <div class="btn-row view-toggle">
+          <button class="btn ghost" type="button" data-view="annotated">${icon(data.mode === "grid" ? "grid" : "plate")} ${data.mode === "grid" ? "Plate" : "Annotated"}</button>
+          <button class="btn ghost" type="button" data-view="original">${icon("image")} Original</button>
         </div>
         <dl class="stat-list">
           <div><dt>Operator</dt><dd>${esc(data.operator)}</dd></div>
@@ -712,7 +711,6 @@ function analysisView(data) {
           <div><dt>Threshold</dt><dd>${data.confidence}</dd></div>
           <div><dt>Mean score</dt><dd>${data.mean_confidence == null ? "—" : data.mean_confidence.toFixed(2)}</dd></div>
           <div><dt>Layout</dt><dd>${data.mode === "grid" ? `${data.rows}×${data.cols} ${data.layout === "scanner" ? "scanner" : "rows"}` : "Single"}</dd></div>
-          <div><dt>Model</dt><dd>${esc(data.detector_label || "best.pt")}</dd></div>
         </dl>
       </aside>
     </section>
@@ -762,9 +760,14 @@ function wireAnalysis(root, data) {
     if (more) more.textContent = tile.detections.length > 40 ? `Showing 40 of ${tile.detections.length}. The CSV has every box.` : "";
   }
   root.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
-    if (button.dataset.view === "original") show(data.original_url, "Original");
-    else show(data.annotated_url, data.mode === "grid" ? "Full plate" : "Detections");
-    if (button.dataset.view !== "original" && data.tiles[0] && data.mode === "single") showTile(0);
+    const heading = root.querySelector("#det-title");
+    if (button.dataset.view === "original") {
+      show(data.original_url);
+      if (heading) heading.textContent = "Detections";
+      return;
+    }
+    if (data.tiles[0] && data.mode === "single") showTile(0);
+    else show(data.annotated_url, data.mode === "grid" ? "Detections · tile 1" : "Detections");
   }));
   root.querySelectorAll("[data-tile]").forEach((button) => button.addEventListener("click", () => showTile(Number(button.dataset.tile))));
   if (data.tiles[0] && data.tiles[0].detections.length > 40) {
